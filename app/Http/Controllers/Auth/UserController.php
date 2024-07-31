@@ -11,18 +11,22 @@ use Illuminate\Routing\Controllers\Middleware;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Laravel\Socialite\Facades\Socialite;
 
 use function PHPUnit\Framework\isNull;
 
 class UserController extends Controller implements HasMiddleware
 {
+    public $code = null;
+
+
     public static function middleware(): array
     {
         return [
-            new Middleware('auth', except: ['login', 'register', 'verifyEmailAddress', 'forgotPassword', 'getForgotPassword', 'setForgotPassword', 'googleRedirect', 'googleCallback']),
+            new Middleware('auth', except: ['login', 'register', 'forgotPassword', 'getForgotPassword', 'setForgotPassword', 'googleRedirect', 'googleCallback']),
             //new Middleware('throttle:0,1,1', only: ['forgotPassword']),
-            new Middleware('signed', only: ['verifyEmailAddress']),
+//            new Middleware('signed', only: ['verifyEmailAddress']),
         ];
     }
 
@@ -124,20 +128,26 @@ class UserController extends Controller implements HasMiddleware
         if ($user->hasVerifiedEmail()) {
             return $this->success('Email already verified.');
         }
-        $user->sendEmailVerificationNotification();
+        $this->code = random_int(1000, 9999);
+
+        Mail::to($user->email)->send(new \App\Mail\VarificationCode($this->code));
+
+
         return $this->success(["We have sent the verification code to $user->email"]);
     }
 
     public function verifyEmailAddress(Request $request)
     {
-        $user = User::find($request->route('id'));
+        $request->validate([
+            'otp'=>"reqiured | digits:4",
+        ]);
+        $user = Auth::user();
 
-        if ($user->hasVerifiedEmail()) {
-            return $this->success('Email already verified.');
-        }
-
-        if ($user->markEmailAsVerified()) {
-            return $this->success($user);
+        if ($request->otp != $this->code)
+        {
+            return $this->error("Incorrect code");
+        }else{
+            return "test";
         }
 
         return $this->error("$user->email could not be verified.");

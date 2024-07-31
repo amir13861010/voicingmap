@@ -1,0 +1,605 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "Admin OpenApi",
+        "description": "this is a api documentation",
+        "contact": {
+            "name": "Emad Shirzad",
+            "email": "Emadsh00724@gmail.com"
+        },
+        "license": {
+            "name": "GPL-v3.0",
+            "url": "https://www.gnu.org/licenses/gpl-3.0.en.html"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://127.0.0.1:8000/api"
+        }
+    ],
+    "paths": {
+        "/auth/register": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "register",
+                "description": "register",
+                "operationId": "register",
+                "requestBody": {
+                    "description": "tasks input",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "description": "name",
+                                        "type": "string",
+                                        "example": "string"
+                                    },
+                                    "email": {
+                                        "description": "email",
+                                        "type": "string",
+                                        "example": "test@example.com"
+                                    },
+                                    "password": {
+                                        "description": "password",
+                                        "type": "string",
+                                        "example": "password"
+                                    },
+                                    "password_confirmation": {
+                                        "description": "password_confirmation",
+                                        "type": "string",
+                                        "example": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success Message",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserModel"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "an 'unexpected' error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorModel"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/verify-email": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "verify email",
+                "description": "verify email",
+                "operationId": "9a49b6ff4a3b9295059a0822bb7c1355",
+                "responses": {
+                    "200": {
+                        "description": "Success Message",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessModel"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "an 'unexpected' error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorModel"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "api_key": []
+                    }
+                ]
+            }
+        },
+        "/auth/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "login",
+                "description": "login",
+                "operationId": "login",
+                "requestBody": {
+                    "description": "tasks input",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "email": {
+                                        "description": "email",
+                                        "type": "string",
+                                        "example": "test@example.com"
+                                    },
+                                    "password": {
+                                        "description": "password",
+                                        "type": "string",
+                                        "default": "null",
+                                        "example": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success Message",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessModel"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "an 'unexpected' error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorModel"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/me": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "my info",
+                "description": "my info",
+                "operationId": "59273b216484b10f0c90b735feefea72",
+                "responses": {
+                    "200": {
+                        "description": "Success Message",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserModel"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "an 'unexpected' error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorModel"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "api_key": []
+                    }
+                ]
+            }
+        },
+        "/auth/logout": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "logout",
+                "description": "logout",
+                "operationId": "logout",
+                "responses": {
+                    "200": {
+                        "description": "Success Message",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessModel"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "an 'unexpected' error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorModel"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "api_key": []
+                    }
+                ]
+            }
+        },
+        "/auth/refresh": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "refresh",
+                "description": "refresh a token",
+                "operationId": "refresh",
+                "responses": {
+                    "200": {
+                        "description": "Success Message",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessModel"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "an 'unexpected' error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorModel"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "api_key": []
+                    }
+                ]
+            }
+        },
+        "/auth/change-password": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Change user password",
+                "description": "Change user password",
+                "operationId": "c011ebea8c59203c927f60829422c6b7",
+                "requestBody": {
+                    "description": "tasks input",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "current_password": {
+                                        "description": "current password",
+                                        "type": "string",
+                                        "example": "******"
+                                    },
+                                    "new_password": {
+                                        "description": "new password",
+                                        "type": "string",
+                                        "example": "******"
+                                    },
+                                    "new_password_confirmation": {
+                                        "description": "confirmation your password",
+                                        "type": "string",
+                                        "example": "******"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success Message",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessModel"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "an 'unexpected' error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorModel"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "api_key": []
+                    }
+                ]
+            }
+        },
+        "/auth/google": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "redirect to google",
+                "description": "redirect to google",
+                "operationId": "redirect to google",
+                "responses": {
+                    "200": {
+                        "description": "Success Message",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessModel"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "an 'unexpected' error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorModel"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/test": {
+            "get": {
+                "tags": [
+                    "Test"
+                ],
+                "description": "Test page",
+                "operationId": "06a23cbe2b9a3a88c35b570fa5d3ef75",
+                "responses": {
+                    "200": {
+                        "description": "Success Message",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessModel"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "an \"unexpected\" error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorModel"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Internal Server Error"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "SuccessModel": {
+                "title": "Success Model",
+                "description": "Success Model",
+                "properties": {
+                    "message": {
+                        "description": "Success message",
+                        "type": "string",
+                        "format": "",
+                        "example": "my message"
+                    }
+                },
+                "type": "object"
+            },
+            "ErrorModel": {
+                "title": "Error Model",
+                "description": "Error Model",
+                "properties": {
+                    "message": {
+                        "description": "error message",
+                        "type": "string",
+                        "format": "",
+                        "example": "my error message"
+                    },
+                    "errors": {
+                        "description": "errors",
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "example": [
+                            "error1",
+                            "error2"
+                        ]
+                    }
+                },
+                "type": "object"
+            },
+            "Previous": {
+                "title": "Previous",
+                "description": "Represents a link",
+                "properties": {
+                    "url": {
+                        "description": "Link URL",
+                        "type": "string",
+                        "example": null
+                    },
+                    "label": {
+                        "description": "Link label",
+                        "type": "string",
+                        "example": "&laquo; Previous"
+                    },
+                    "active": {
+                        "description": "Indicates whether the link is active",
+                        "type": "boolean"
+                    }
+                },
+                "type": "object"
+            },
+            "Links": {
+                "title": "Links ",
+                "description": "Represents an active link",
+                "properties": {
+                    "url": {
+                        "description": "Link URL",
+                        "type": "string",
+                        "example": "http://your-url/api/category?page=0"
+                    },
+                    "label": {
+                        "description": "Link label",
+                        "type": "string",
+                        "example": "1"
+                    },
+                    "active": {
+                        "description": "Indicates whether the link is active",
+                        "type": "boolean",
+                        "example": true
+                    }
+                },
+                "type": "object"
+            },
+            "Next": {
+                "title": "Next",
+                "description": "Represents an active link",
+                "properties": {
+                    "url": {
+                        "description": "Link URL",
+                        "type": "string",
+                        "example": null
+                    },
+                    "label": {
+                        "description": "Link label",
+                        "type": "string",
+                        "example": "Next &raquo;"
+                    },
+                    "active": {
+                        "description": "Indicates whether the link is active",
+                        "type": "boolean",
+                        "example": false
+                    }
+                },
+                "type": "object"
+            },
+            "UserModel": {
+                "title": "User Model",
+                "description": "Represents a user",
+                "properties": {
+                    "id": {
+                        "description": "user ID",
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "first_name": {
+                        "description": "first_name",
+                        "type": "string"
+                    },
+                    "last_name": {
+                        "description": "last name",
+                        "type": "string"
+                    },
+                    "email": {
+                        "description": "email",
+                        "type": "string"
+                    },
+                    "email_verified_at": {
+                        "description": "email verified date",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "is_admin": {
+                        "description": "user role",
+                        "type": "boolean"
+                    },
+                    "created_at": {
+                        "description": "created date",
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "updated_at": {
+                        "description": "updated date",
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                },
+                "type": "object"
+            }
+        },
+        "securitySchemes": {
+            "api_key": {
+                "type": "http",
+                "description": "Login with username and password to get the authentication token <div>Example: Bearer token</div>",
+                "name": "Authorization",
+                "in": "header",
+                "bearerFormat": "JWT",
+                "scheme": "Bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Authentication",
+            "description": "Authentication"
+        },
+        {
+            "name": "Test",
+            "description": "Test"
+        }
+    ]
+}

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
@@ -128,31 +129,86 @@ class UserController extends Controller implements HasMiddleware
         if ($user->hasVerifiedEmail()) {
             return $this->success('Email already verified.');
         }
+        $now = Carbon::now();
+        if ($user->code_sent_at) {
+            $codeSentAt = Carbon::parse($user->code_sent_at);
+            $diffInMinutes = abs($now->diffInMinutes($codeSentAt));
+
+            if ($diffInMinutes < 2) {
+                return $this->error('Please wait before requesting a new code.');
+            }
+        }
         $this->code = random_int(1000, 9999);
 
         Mail::to($user->email)->send(new \App\Mail\VarificationCode($this->code));
 
+        $user->verification_code = $this->code;
+        $user->code_sent_at = $now;
+        $user->save();
+
+        Log::info('New code sent at: ' . $user->code_sent_at);
 
         return $this->success(["We have sent the verification code to $user->email"]);
     }
-
+    /**
+     * @OA\Post(
+     *     path="/auth/email/verify",
+     *     tags={"Authentication"},
+     *     summary="Verify email address with OTP",
+     *     description="Verify the user's email address using the OTP sent to the email.",
+     *     operationId="verifyEmailAddress",
+     *     @OA\RequestBody(
+     *         description="OTP input",
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(
+     *                 property="otp",
+     *                 type="string",
+     *                 description="One Time Password sent to the user's email",
+     *                 example="1234"
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Email verified successfully",
+     *         @OA\JsonContent(ref="#/components/schemas/SuccessModel"),
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid OTP or email verification failed",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorModel"),
+     *     ),
+     *     security={{"api_key": {}}}
+     * )
+     */
     public function verifyEmailAddress(Request $request)
     {
         $request->validate([
-            'otp'=>"reqiured | digits:4",
+            'otp' => 'required|digits:4',
         ]);
-        $user = Auth::user();
 
-        if ($request->otp != $this->code)
-        {
+        $user = Auth::user();
+        $now = Carbon::now();
+
+        if ($request->otp != $user->verification_code) {
             return $this->error("Incorrect code");
-        }else{
-            return "test";
         }
 
-        return $this->error("$user->email could not be verified.");
-    }
+        $codeSentAt = Carbon::parse($user->code_sent_at);
+        $diffInMinutes = abs($now->diffInMinutes($codeSentAt));
 
+        if ($diffInMinutes >= 2) {
+            return $this->error("The verification code has expired.");
+        }
+
+        // Implement email verification logic here, such as marking the email as verified
+        $user->markEmailAsVerified();
+        $user->verification_code = null; // Remove the used code
+        $user->save();
+
+        return $this->success("Email verified successfully");
+    }
     /**
      * @OA\Post(
      *     path="/auth/login",

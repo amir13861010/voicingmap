@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use PHPOpenSourceSaver\JWTAuth\Contracts\JWTSubject;
+use Carbon\Carbon;
+
 
 /**
  * @OA\Schema(
@@ -84,7 +86,11 @@ class User extends Authenticatable implements JWTSubject
         'password',
         'remember_token',
     ];
-
+    protected $dates = [
+        'code_sent_at',
+        'created_at',
+        'updated_at',
+    ];
     /**
      * Get the attributes that should be cast.
      *

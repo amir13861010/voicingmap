@@ -266,26 +266,26 @@ class UserController extends Controller implements HasMiddleware
     }
 
     /**
-    * @OA\Get(
-    *     path="/auth/me",
-    *     tags={"Authentication"},
-    *     summary="my info",
-    *     description="my info",
-    *     @OA\Response(
-    *         response=200,
-    *         description="Success Message",
-    *         @OA\JsonContent(ref="#/components/schemas/UserModel"),
-    *     ),
-    *     @OA\Response(
-    *         response=400,
-    *         description="an 'unexpected' error",
-    *         @OA\JsonContent(ref="#/components/schemas/ErrorModel"),
-    *     ),security={{"api_key": {}}}
-    * )
-    * Get the authenticated User.
-    *
-    * @return \Illuminate\Http\JsonResponse
-    */
+     * @OA\Get(
+     *     path="/auth/me",
+     *     tags={"Authentication"},
+     *     summary="my info",
+     *     description="my info",
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success Message",
+     *         @OA\JsonContent(ref="#/components/schemas/UserModel"),
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="an 'unexpected' error",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorModel"),
+     *     ),security={{"api_key": {}}}
+     * )
+     * Get the authenticated User.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function me()
     {
         return $this->success(auth()->user());

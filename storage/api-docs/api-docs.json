@@ -121,61 +121,6 @@
                 ]
             }
         },
-        "/auth/email/verify": {
-            "post": {
-                "tags": [
-                    "Authentication"
-                ],
-                "summary": "Verify email address with OTP",
-                "description": "Verify the user's email address using the OTP sent to the email.",
-                "operationId": "verifyEmailAddress",
-                "requestBody": {
-                    "description": "OTP input",
-                    "required": true,
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "properties": {
-                                    "otp": {
-                                        "description": "One Time Password sent to the user's email",
-                                        "type": "string",
-                                        "example": "1234"
-                                    }
-                                },
-                                "type": "object"
-                            }
-                        }
-                    }
-                },
-                "responses": {
-                    "200": {
-                        "description": "Email verified successfully",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/SuccessModel"
-                                }
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid OTP or email verification failed",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ErrorModel"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "api_key": []
-                    }
-                ]
-            }
-        },
         "/auth/login": {
             "post": {
                 "tags": [

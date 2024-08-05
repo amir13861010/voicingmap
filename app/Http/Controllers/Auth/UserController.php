@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ForgotMail;
+use App\Models\ForgotPassword;
 use App\Models\User;
 use Carbon\Carbon;
 use Exception;
-use Illuminate\Http\File;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -16,9 +17,6 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Laravel\Socialite\Facades\Socialite;
-
-use function PHPUnit\Framework\isNull;
-
 class UserController extends Controller implements HasMiddleware
 {
     public $code = null;
@@ -29,7 +27,6 @@ class UserController extends Controller implements HasMiddleware
         return [
             new Middleware('auth', except: ['login', 'register', 'forgotPassword', 'getForgotPassword', 'setForgotPassword', 'googleRedirect', 'googleCallback']),
             //new Middleware('throttle:0,1,1', only: ['forgotPassword']),
-//            new Middleware('signed', only: ['verifyEmailAddress']),
         ];
     }
 
@@ -191,6 +188,7 @@ class UserController extends Controller implements HasMiddleware
             'otp' => 'required|digits:4',
         ]);
 
+        /** @var User $user */
         $user = Auth::user();
         $now = Carbon::now();
 
@@ -432,22 +430,97 @@ class UserController extends Controller implements HasMiddleware
         }
     }
 
+    /**
+     * @OA\Put(
+     *     path="/auth/edit/profile",
+     *     tags={"Authentication"},
+     *     summary="Change user ifon",
+     *     description="Change user ifon",
+     *     @OA\RequestBody(
+     *         description="tasks input",
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(
+     *                 property="name",
+     *                 type="string",
+     *                 description="name",
+     *                 example="test"
+     *             ),
+     *             @OA\Property(
+     *                 property="email",
+     *                 type="string",
+     *                 description="email",
+     *                 example="test@example.com",
+     *             ),
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success Message",
+     *         @OA\JsonContent(ref="#/components/schemas/UserModel"),
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="an 'unexpected' error",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorModel"),
+     *     ),security={{"api_key": {}}}
+     * )
+     * profile
+     */
     public function edit(Request $request)
     {
         $request->validate([
             'name' => 'max:255',
             'email' => 'email|unique:users',
-            'password' => 'confirmed|min:6',
         ]);
         try {
-            $auth = Auth::getUser();
-            $auth->update($request->all());
-            return $this->success(['message' => 'Profile updated successfully']);
+            /** @var User $user */
+            $user = Auth::user();
+            $user->update($request->only(['name','email']));
+            return $this->success($user);
         } catch (Exception $e) {
             Log::error($e->getMessage());
             return $this->error('An error occurred while updating profile.');
         }
     }
+
+    /**
+     * @OA\Post(
+     *     path="/auth/upload/avatar",
+     *     tags={"Authentication"},
+     *     summary="logout",
+     *     description="logout",
+     *       @OA\RequestBody(
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 allOf={
+     *                     @OA\Schema(
+     *                         @OA\Property(
+     *                             description="Item",
+     *                             property="file",
+     *                             type="string", format="binary"
+     *                         )
+     *                     )
+     *                 }
+     *             )
+     *         )
+     *     ),
+
+     *     @OA\Response(
+     *         response=200,
+     *         description="Success Message",
+     *         @OA\JsonContent(ref="#/components/schemas/SuccessModel"),
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="an 'unexpected' error",
+     *         @OA\JsonContent(ref="#/components/schemas/ErrorModel"),
+     *     ),security={{"api_key": {}}}
+     * )
+     *
+     * upload image
+     */
     public function UploadAvtar(Request $request)
     {
         $request->validate([
@@ -457,14 +530,13 @@ class UserController extends Controller implements HasMiddleware
         try {
             $filepath = $request->file("file")->store('avatars', 'public');
 
-            $auth = Auth::getUser();
-            if (!is_null($auth->avatar)) {
-                // Delete the old avatar if it exists
-                Storage::disk('public')->delete($auth->avatar);
+            /** @var User $user */
+            $user = Auth::user();
+            if (!is_null($user->avatar)) {
+                Storage::disk('public')->delete($user->avatar);
             }
 
-            // Update the avatar with the new file path
-            $auth->update(["avatar" => $filepath]);
+            $user->update(["avatar" => $filepath]);
 
             return $this->success(['message' => 'Avatar uploaded successfully']);
         } catch (Exception $e) {
@@ -472,6 +544,7 @@ class UserController extends Controller implements HasMiddleware
             return $this->error('An error occurred while uploading avatar.');
         }
     }
+
     /**
      * @OA\Get(
      *     path="/auth/google",
@@ -520,13 +593,99 @@ class UserController extends Controller implements HasMiddleware
             $newUser = User::create([
                 'name' => $googleUser->name,
                 'email' => $googleUser->email,
-                'password' => Hash::make(str_random(16)),
+                'password' => Hash::make(str()->random(16)),
             ]);
             auth()->login($newUser);
             return $this->success($newUser);
         } catch (Exception $e) {
             Log::error('Google callback error: ' . $e->getMessage());
             return $this->error('An error occurred during authentication.');
+        }
+    }
+
+    /**
+    * @OA\Post(
+    *     path="/auth/forgotPassword",
+    *     tags={"Authentication"},
+    *     summary="Forgot user password",
+    *     description="Forgot user password",
+    *     @OA\RequestBody(
+    *         description="tasks input",
+    *         required=true,
+    *         @OA\JsonContent(
+    *             @OA\Property(
+    *                 property="email",
+    *                 type="string",
+    *                 description="email",
+    *                 example="test@example.com"
+    *             ),
+    *         )
+    *     ),
+    *     @OA\Response(
+    *         response=200,
+    *         description="Success Message",
+    *         @OA\JsonContent(ref="#/components/schemas/SuccessModel"),
+    *     ),
+    *     @OA\Response(
+    *         response=400,
+    *         description="an 'unexpected' error",
+    *         @OA\JsonContent(ref="#/components/schemas/ErrorModel"),
+    *     )
+    * )
+    * forgot password
+    */
+    public function forgotPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+        ]);
+
+        try {
+            $user = User::whereEmail($request->email)->first();
+            if (!$user) {
+                sleep(2);
+                return $this->success(['message' => 'Password reset link sent to your email']);
+            }
+            ForgotPassword::whereEmail($user->email)->update(['status'=>1]);
+            $token = str()->random(60);
+            ForgotPassword::create(
+                ['email' => $user->email, 'token' => $token, ]
+            );
+            Mail::to($user->email)->send(new ForgotMail($user, $token));
+            return $this->success(['message' => 'Password reset link sent to your email']);
+        } catch (Exception $e) {
+            Log::error($e->getMessage());
+            return $this->error('Something went wrong');
+        }
+    }
+
+    public function getForgotPassword(string $token)
+    {
+        return view('mail.forgotForm', ['token' => $token]);
+    }
+
+    public function setForgotPassword(Request $request, string $token)
+    {
+        $request->validate([
+            'password'     => 'required|string|min:7|confirmed',
+        ]);
+
+        try {
+            $forgotPassword = ForgotPassword::whereToken($token)->whereStatus(0)->firstOrFail();
+            if (!$forgotPassword) {
+                return $this->error('invalid token');
+            }
+
+            $user = User::whereEmail($forgotPassword->email)->firstOrFail();
+
+            $forgotPassword->status = 1;
+            $forgotPassword->save();
+
+            $user->update(['password' => bcrypt(request('password'))]);
+            return $this->success($user);
+        } catch (Exception $e) {
+            Log::error($e->getMessage());
+            return $this->error('Password change failed');
         }
     }
 }

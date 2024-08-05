@@ -19,7 +19,7 @@ Route::group([
     Route::put('/edit/profile', [UserController::class, 'edit']);
     Route::get('google', [UserController::class, 'googleRedirect'])->middleware('web');
     Route::get('google/callback', [UserController::class, 'googleCallback'])->middleware('web');
-    // Route::post('forgotPassword', [UserController::class, 'forgotPassword']);
-    // Route::get('forgotPassword/{token}', [UserController::class, 'getForgotPassword'])->name('password.reset');
-    // Route::post('forgotPassword/{token}', [UserController::class, 'setForgotPassword'])->name('change-password');
+    Route::post('forgotPassword', [UserController::class, 'forgotPassword']);
+    Route::get('forgotPassword/{token}', [UserController::class, 'getForgotPassword'])->name('password.reset');
+    Route::post('forgotPassword/{token}', [UserController::class, 'setForgotPassword'])->name('change-password');
 });

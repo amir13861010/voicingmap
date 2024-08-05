@@ -408,6 +408,123 @@
                 ]
             }
         },
+        "/auth/edit/profile": {
+            "put": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Change user ifon",
+                "description": "Change user ifon",
+                "operationId": "f55b8e2575608035d779fd843a3b48b7",
+                "requestBody": {
+                    "description": "tasks input",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "description": "name",
+                                        "type": "string",
+                                        "example": "test"
+                                    },
+                                    "email": {
+                                        "description": "email",
+                                        "type": "string",
+                                        "example": "test@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success Message",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserModel"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "an 'unexpected' error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorModel"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "api_key": []
+                    }
+                ]
+            }
+        },
+        "/auth/upload/avatar": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "logout",
+                "description": "logout",
+                "operationId": "4d5033a26962d0e634c07048723a65fe",
+                "requestBody": {
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "allOf": [
+                                    {
+                                        "properties": {
+                                            "file": {
+                                                "description": "Item",
+                                                "type": "string",
+                                                "format": "binary"
+                                            }
+                                        },
+                                        "type": "object"
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Success Message",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessModel"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "an 'unexpected' error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorModel"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "api_key": []
+                    }
+                ]
+            }
+        },
         "/auth/google": {
             "get": {
                 "tags": [
@@ -416,6 +533,56 @@
                 "summary": "redirect to google",
                 "description": "redirect to google",
                 "operationId": "redirect to google",
+                "responses": {
+                    "200": {
+                        "description": "Success Message",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SuccessModel"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "an 'unexpected' error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ErrorModel"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/forgotPassword": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Forgot user password",
+                "description": "Forgot user password",
+                "operationId": "cf3ca836a29809084f52fac22921f8ca",
+                "requestBody": {
+                    "description": "tasks input",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "email": {
+                                        "description": "email",
+                                        "type": "string",
+                                        "example": "test@example.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
                 "responses": {
                     "200": {
                         "description": "Success Message",

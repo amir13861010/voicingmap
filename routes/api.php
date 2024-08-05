@@ -15,6 +15,8 @@ Route::group([
     Route::post('change-password', [UserController::class, 'changePassword']);
     Route::get('verify-email', [UserController::class, 'verifyEmail']);
     Route::post('/email/verify', [UserController::class, 'verifyEmailAddress']);
+    Route::post('/upload/avatar', [UserController::class, 'UploadAvtar']);
+    Route::put('/edit/profile', [UserController::class, 'edit']);
     Route::get('google', [UserController::class, 'googleRedirect'])->middleware('web');
     Route::get('google/callback', [UserController::class, 'googleCallback'])->middleware('web');
     // Route::post('forgotPassword', [UserController::class, 'forgotPassword']);

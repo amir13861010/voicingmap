@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Http\File;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controllers\HasMiddleware;
 use Illuminate\Routing\Controllers\Middleware;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Socialite\Facades\Socialite;
 
 use function PHPUnit\Framework\isNull;
@@ -88,9 +90,9 @@ class UserController extends Controller implements HasMiddleware
     public function register(Request $request)
     {
         $request->validate([
-            'name'       => 'required|max:255',
-            'email'      => 'required|email|unique:users',
-            'password'   => 'required|confirmed|min:6',
+            'name' => 'required|max:255',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|confirmed|min:6',
         ]);
         try {
             $user = User::create($request->all());
@@ -150,6 +152,7 @@ class UserController extends Controller implements HasMiddleware
 
         return $this->success(["We have sent the verification code to $user->email"]);
     }
+
     /**
      * @OA\Post(
      *     path="/auth/email/verify",
@@ -209,6 +212,7 @@ class UserController extends Controller implements HasMiddleware
 
         return $this->success("Email verified successfully");
     }
+
     /**
      * @OA\Post(
      *     path="/auth/login",
@@ -254,7 +258,7 @@ class UserController extends Controller implements HasMiddleware
     public function login(Request $request)
     {
         $request->validate([
-            'email'    => 'required|email',
+            'email' => 'required|email',
             'password' => 'required',
         ]);
 
@@ -351,7 +355,7 @@ class UserController extends Controller implements HasMiddleware
     /**
      * Get the token array structure.
      *
-     * @param  string $token
+     * @param string $token
      *
      * @return \Illuminate\Http\JsonResponse
      */
@@ -359,8 +363,8 @@ class UserController extends Controller implements HasMiddleware
     {
         return response()->json([
             'access_token' => $token,
-            'token_type'   => 'bearer',
-            'expires_in'   => Auth::factory()->getTTL() * 60
+            'token_type' => 'bearer',
+            'expires_in' => Auth::factory()->getTTL() * 60
         ]);
     }
 
@@ -411,7 +415,7 @@ class UserController extends Controller implements HasMiddleware
     {
         $request->validate([
             'current_password' => 'required',
-            'new_password'     => 'required|confirmed',
+            'new_password' => 'required|confirmed',
         ]);
 
         /** @var User $user */
@@ -428,6 +432,46 @@ class UserController extends Controller implements HasMiddleware
         }
     }
 
+    public function edit(Request $request)
+    {
+        $request->validate([
+            'name' => 'max:255',
+            'email' => 'email|unique:users',
+            'password' => 'confirmed|min:6',
+        ]);
+        try {
+            $auth = Auth::getUser();
+            $auth->update($request->all());
+            return $this->success(['message' => 'Profile updated successfully']);
+        } catch (Exception $e) {
+            Log::error($e->getMessage());
+            return $this->error('An error occurred while updating profile.');
+        }
+    }
+    public function UploadAvtar(Request $request)
+    {
+        $request->validate([
+            "file" => "file|max:4000|mimes:jpg,png,svg"
+        ]);
+
+        try {
+            $filepath = $request->file("file")->store('avatars', 'public');
+
+            $auth = Auth::getUser();
+            if (!is_null($auth->avatar)) {
+                // Delete the old avatar if it exists
+                Storage::disk('public')->delete($auth->avatar);
+            }
+
+            // Update the avatar with the new file path
+            $auth->update(["avatar" => $filepath]);
+
+            return $this->success(['message' => 'Avatar uploaded successfully']);
+        } catch (Exception $e) {
+            Log::error($e->getMessage());
+            return $this->error('An error occurred while uploading avatar.');
+        }
+    }
     /**
      * @OA\Get(
      *     path="/auth/google",
@@ -451,13 +495,14 @@ class UserController extends Controller implements HasMiddleware
      *
      * @return \Illuminate\Http\JsonResponse
      */
+
     public function googleRedirect()
     {
         try {
             return Socialite::driver('google')->redirect();
         } catch (Exception $e) {
             Log::error($e->getMessage());
-            return $this->error('An unexpected error occurred', status:400);
+            return $this->error('An unexpected error occurred', status: 400);
         }
     }
 
@@ -465,17 +510,17 @@ class UserController extends Controller implements HasMiddleware
     {
         try {
             $googleUser = Socialite::driver('google')->user();
-            $user = User::whereEmail($googleUser->email)->first();
+            $user = User::where('email', $googleUser->email)->first();
 
             if ($user) {
                 auth()->login($user);
-
                 return $this->success($user);
             }
+
             $newUser = User::create([
-                'name'     => $googleUser->name,
-                'email'    => $googleUser->email,
-                'password' => Hash::make(str()->random(16)),
+                'name' => $googleUser->name,
+                'email' => $googleUser->email,
+                'password' => Hash::make(str_random(16)),
             ]);
             auth()->login($newUser);
             return $this->success($newUser);
